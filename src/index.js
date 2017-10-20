@@ -1,4 +1,5 @@
 import Ball from './ball';
+import Vector from './vector';
 
 var canvas = document.createElement('canvas');
 canvas.width = 760;
@@ -6,10 +7,10 @@ canvas.height = 480;
 var context = canvas.getContext('2d');
 document.body.appendChild(canvas);
 
-var balls = []
+var balls = [];
 balls[15] = new Ball(15, {x: 732, y: 266});
-balls[0] =  new Ball(1,  {x: 266, y: 266});
-balls[1] =  new Ball(2,  {x: 240, y: 250});
+balls[0] =  new Ball(0,  {x: 266, y: 266});
+balls[1] =  new Ball(1,  {x: 240, y: 250});
 balls[8] =  new Ball(8,  {x: 240, y: 281});
 balls[9] =  new Ball(9,  {x: 212, y: 236});
 balls[7] =  new Ball(7,  {x: 212, y: 266});
@@ -37,9 +38,30 @@ function update() {
       if(900 > Math.pow(a.x-b.x, 2) + Math.pow(a.y-b.y, 2)) {
         balls[i].setColor('red');
         balls[j].setColor('red');
+        //Handle Collision Restitution
+        //0.5 * Mass1 * U1^2 + 0.5 * Mass2 * U2^2 =
+        //0.5 * Mass1 * Velocity1^2 + 0.5 * Mass2 * Velocity2^2
+        //u1^2 + u2^2 = V1^2 + V2^2
+        //V1 = sqrt(u1^2 + u2^2 - V2^2)
+        //Momentum
+        //m1 * u1 + m2 * u2 = m1 * v1 + m2 * v2
+        //m2 * v2 = m1 * u1 + m2 * u2 - m1 * v1
+        //v2 = (m1 * u1 + m2 * u2 - m1 * v1) / m2
+        //Assuming all mass is equal
+        //v2 = u1 + u2 - v1
+        //v1^2 = u1^2 + u2^2 - (u2 + u1 - v1)^2
+        //v1^2 + u2 * u1 - u2 * u1 - u1 * v1 = 0
+        //v1^2 - u1 * v1 = 0 - Don't think this is right
+        let c = balls[i].getVelocity();
+        let d = balls[j].getVelocity();
+        //Determine angle between centers
+        let angle = Math.atan2(diff.y, diff.x);
+        let diff = Vector.subtract(a, b);
+        c = Vector.rotate(c, angle);
+        d = Vector.rotate(d, angle);
       } else {
         balls[i].setColor('gray');
-        balls[j].setColor('red');
+        balls[j].setColor('gray');
       }
     }
   }
@@ -57,6 +79,6 @@ function loop() {
   render();
 }
 
-setInterval(loop, 1/30000);
+setInterval(loop, 1000/60);
 
-balls[15].setVelocity({x: -0.1, y:0})
+balls[15].setVelocity({x: -2.5, y:0});
